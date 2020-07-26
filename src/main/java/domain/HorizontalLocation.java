@@ -1,6 +1,7 @@
 package domain;
 
 import com.oracle.webservices.internal.api.databinding.DatabindingMode;
+import lombok.Builder;
 import lombok.Data;
 
 import java.awt.*;
@@ -12,7 +13,8 @@ import java.awt.*;
  * Time: 09:25
  */
 @Data
-public class Location {
+@Builder
+public class HorizontalLocation {
     private String name;
-    private Color initColor;
+
 }

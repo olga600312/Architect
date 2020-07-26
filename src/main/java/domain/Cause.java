@@ -1,6 +1,7 @@
 package domain;
 
 import global.Utilities;
+import lombok.Builder;
 import lombok.Data;
 
 import java.awt.*;
@@ -13,20 +14,23 @@ import java.util.ArrayList;
  * Time: 09:24
  */
 @Data
+@Builder
 public class Cause {
-    private Location location;
+    private HorizontalLocation horizontalLocation;
     private ArrayList<Entry> data;
 
     public void initColors(float step){
-        data.forEach(e->e.setColor(Utilities.color(location.getInitColor(),e.getTotal(),step)));
+        data.forEach(e->e.setColor(Utilities.color(e.getLocation().getType().getInitColor(),e.getTotal(),step)));
     }
 
 
     @Data
+    @Builder
     public static class Entry {
-        private Location location;
+        private VerticalLocation location;
         private int total;
         private Color color;
+        private  String file;
     }
 
     public Entry entryAt(int index) {

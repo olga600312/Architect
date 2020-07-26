@@ -11,6 +11,7 @@ import java.util.ArrayList;
  * Date: 26/07/2020
  * Time: 10:27
  */
+
 public class CauseModel extends AbstractTableModel {
     private ArrayList<Cause> data;
     private ArrayList<String> columns;
@@ -20,20 +21,41 @@ public class CauseModel extends AbstractTableModel {
     }
 
     public int getColumnCount() {
-        return columns.size();
+        return columns.size()+1;
     }
 
     @Override
     public String getColumnName(int column) {
-        return columns.get(column);
+        return column==0?"":columns.get(column-1);
     }
 
     @Override
     public Class<?> getColumnClass(int columnIndex) {
-        return Cause.Entry.class;
+        return columnIndex==0?String.class:Cause.Entry.class;
     }
 
     public Object getValueAt(int rowIndex, int columnIndex) {
-        return rowIndex >= 0 && rowIndex < data.size() ? data.get(rowIndex).entryAt(columnIndex) : null;
+        Object o=null;
+        if(columnIndex==0){
+            o=data.get(rowIndex).getHorizontalLocation().getName();
+        }else {
+            o = rowIndex >= 0 && rowIndex < data.size() ? data.get(rowIndex).entryAt(columnIndex-1) : null;
+        }
+        return o;
     }
+
+    public ArrayList<Cause> getData() {
+        return data;
+    }
+
+    public void setData(ArrayList<String> columns,ArrayList<Cause> data) {
+        this.columns = columns;
+        this.data = data;
+        fireTableStructureChanged();
+    }
+
+    public ArrayList<String> getColumns() {
+        return columns;
+    }
+
 }

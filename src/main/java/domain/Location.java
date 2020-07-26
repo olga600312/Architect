@@ -3,6 +3,8 @@ package domain;
 import com.oracle.webservices.internal.api.databinding.DatabindingMode;
 import lombok.Data;
 
+import java.awt.*;
+
 /**
  * Create by Aviv POS
  * User: olgats
@@ -12,4 +14,5 @@ import lombok.Data;
 @Data
 public class Location {
     private String name;
+    private Color initColor;
 }

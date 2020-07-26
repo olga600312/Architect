@@ -74,7 +74,7 @@ public class MainFrame {
 
 //get model for JTable that will be used as the row header, fill in values
         DefaultTableModel rowHeaderTableModel = new DefaultTableModel(0, 1);//one column
-        model.getData().forEach(e -> rowHeaderTableModel.addRow(new Object[]{e.getHorizontalLocation().getName()}));
+        model.getData().forEach(e -> rowHeaderTableModel.addRow(new Object[]{e.getRowHeader().getName()}));
 
 
         //set model for row header, put in data. Alter renderer to make it like col header

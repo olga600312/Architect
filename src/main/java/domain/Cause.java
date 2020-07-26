@@ -16,20 +16,20 @@ import java.util.ArrayList;
 @Data
 @Builder
 public class Cause {
-    private HorizontalLocation horizontalLocation;
+    private HorizontalLocation rowHeader;
     private ArrayList<Entry> data;
 
     public void initColors(float step){
-        data.forEach(e->e.setColor(Utilities.color(e.getLocation().getType().getInitColor(),e.getTotal(),step)));
+        data.forEach(e->e.setColor(Utilities.color(e.getColumnHeader().getType().getInitColor(),e.getTotal(),step)));
     }
 
 
     @Data
     @Builder
     public static class Entry {
-        private VerticalLocation location;
+        private VerticalLocation columnHeader;
         private int total;
-        private Color color;
+        private transient Color color;
         private  String file;
     }
 

@@ -37,7 +37,7 @@ public class CauseModel extends AbstractTableModel {
     public Object getValueAt(int rowIndex, int columnIndex) {
         Object o=null;
         if(columnIndex==0){
-            o=data.get(rowIndex).getHorizontalLocation().getName();
+            o=data.get(rowIndex).getRowHeader().getName();
         }else {
             o = rowIndex >= 0 && rowIndex < data.size() ? data.get(rowIndex).entryAt(columnIndex-1) : null;
         }

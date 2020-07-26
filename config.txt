@@ -1,0 +1,18 @@
+- !!domain.Cause
+  data:
+  - columnHeader: {name: CONFERENCE ROOM, type: WORKPLACE}
+    total: 10
+  - columnHeader: {name: OFFICE, type: WORKPLACE}
+    total: 3
+  - columnHeader: {name: POOL, type: LEISURE}
+    total: 2
+  rowHeader: {name: RESTROOM}
+- !!domain.Cause
+  data:
+  - columnHeader: {name: CONFERENCE ROOM, type: WORKPLACE}
+    total: 10
+  - columnHeader: {name: OFFICE, type: WORKPLACE}
+    total: 0
+  - columnHeader: {name: POOL, type: LEISURE}
+    total: 14
+  rowHeader: {name: HOTEL}

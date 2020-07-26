@@ -42,16 +42,16 @@ public class App {
         workplace.setInitColor(new Color(14147553));
         leisure.setInitColor(new Color(0xE0C7DB));
 
-        arr.add(Cause.Entry.builder().file("fileName").location(VerticalLocation.builder().name(conferenceRoom).type(workplace).build()).total(10).build());
-        arr.add(Cause.Entry.builder().file("fileName").location(VerticalLocation.builder().name(office).type(workplace).build()).total(3).build());
-        arr.add(Cause.Entry.builder().file("fileName").location(VerticalLocation.builder().name(pool).type(leisure).build()).total(2).build());
-        causes.add(Cause.builder().horizontalLocation(HorizontalLocation.builder().name("RESTROOM").build()).data(arr).build());
+        arr.add(Cause.Entry.builder().file("fileName").columnHeader(VerticalLocation.builder().name(conferenceRoom).type(workplace).build()).total(10).build());
+        arr.add(Cause.Entry.builder().file("fileName").columnHeader(VerticalLocation.builder().name(office).type(workplace).build()).total(3).build());
+        arr.add(Cause.Entry.builder().file("fileName").columnHeader(VerticalLocation.builder().name(pool).type(leisure).build()).total(2).build());
+        causes.add(Cause.builder().rowHeader(HorizontalLocation.builder().name("RESTROOM").build()).data(arr).build());
 
         arr=new ArrayList<>();
-        arr.add(Cause.Entry.builder().file("fileName").location(VerticalLocation.builder().name("CONFERENCE ROOM").type(workplace).build()).total(10).build());
-        arr.add(Cause.Entry.builder().location(VerticalLocation.builder().name(office).type(workplace).build()).total(0).build());
-        arr.add(Cause.Entry.builder().location(VerticalLocation.builder().name(pool).type(leisure).build()).total(14).build());
-        causes.add(Cause.builder().horizontalLocation(HorizontalLocation.builder().name("HOTEL").build()).data(arr).build());
+        arr.add(Cause.Entry.builder().file("fileName").columnHeader(VerticalLocation.builder().name("CONFERENCE ROOM").type(workplace).build()).total(10).build());
+        arr.add(Cause.Entry.builder().columnHeader(VerticalLocation.builder().name(office).type(workplace).build()).total(0).build());
+        arr.add(Cause.Entry.builder().columnHeader(VerticalLocation.builder().name(pool).type(leisure).build()).total(14).build());
+        causes.add(Cause.builder().rowHeader(HorizontalLocation.builder().name("HOTEL").build()).data(arr).build());
 
         causes.forEach(e->e.initColors(0.8f));
         Yaml yaml = new Yaml();

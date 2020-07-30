@@ -11,9 +11,12 @@ import java.awt.*;
 public class Utilities {
     public static Color color(Color initColor,int count, float step){
         float[] hsbvals=Color.RGBtoHSB(initColor.getRed(),initColor.getGreen(),initColor.getBlue(),null);
-        float saturation=hsbvals[1]+(count*step)/100;
-        hsbvals[1]=saturation;
+        float saturation=count==0?0:hsbvals[1]+(count*step)/100;
+        hsbvals[1]=Math.min(saturation,0.6f);
+        if(saturation>0.5){
+            hsbvals[2]/=1.5;
+        }
         int rgb=Color.HSBtoRGB(hsbvals[0],hsbvals[1],hsbvals[2]);
-        return new Color(rgb);
+        return count>0?new Color(rgb):new Color(0x00fffffc);
     }
 }

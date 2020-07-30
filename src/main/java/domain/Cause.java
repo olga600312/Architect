@@ -6,6 +6,9 @@ import lombok.Data;
 
 import java.awt.*;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Set;
+import java.util.TreeSet;
 
 /**
  * Create by Aviv POS
@@ -19,8 +22,21 @@ public class Cause {
     private HorizontalLocation rowHeader;
     private ArrayList<Entry> data;
 
-    public void initColors(float step){
-        data.forEach(e->e.setColor(Utilities.color(e.getColumnHeader().getType().getInitColor(),e.getTotal(),step)));
+    public void initColors(float step) {
+        data.forEach(e -> {
+            LocationType type = e.getColumnHeader().getType();
+
+            e.setColor(Utilities.color(type.getInitColor(), e.getTotal(), step));
+        });
+    }
+
+    public Collection<String> getVerticalLocation() {
+        ArrayList<String> s = new ArrayList<>();
+        data.forEach(e -> {
+            if (!s.contains(e.columnHeader.getName()))
+                s.add(e.columnHeader.getName());
+        });
+        return s;
     }
 
 
@@ -30,7 +46,7 @@ public class Cause {
         private VerticalLocation columnHeader;
         private int total;
         private transient Color color;
-        private  String file;
+        private String file;
     }
 
     public Entry entryAt(int index) {

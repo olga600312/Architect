@@ -1,6 +1,7 @@
 package view;
 
 import domain.Cause;
+import domain.LocationType;
 
 import javax.swing.table.AbstractTableModel;
 import java.util.ArrayList;
@@ -62,5 +63,16 @@ public class CauseModel extends AbstractTableModel {
 
     public Cause causeAtRow(int row) {
         return row >= 0 && row < data.size() ? data.get(row) : null;
+    }
+
+    public Collection<Integer> getColumnsByType(LocationType type) {
+        ArrayList<Integer> arr=new ArrayList<>();
+        ArrayList<Cause.Entry> entries = this.data.get(0).getData();
+        for(int i = 0; i< entries.size(); i++){
+            if(entries.get(i).getColumnHeader().getType().equals(type)){
+                arr.add(i);
+            }
+        }
+        return arr;
     }
 }

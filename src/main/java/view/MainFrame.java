@@ -1,19 +1,19 @@
 package view;
 
+import com.sun.istack.internal.NotNull;
 import domain.Cause;
 import domain.LocationType;
 import global.App;
 import global.Constants;
 import global.Utilities;
 import lombok.Data;
-import org.jetbrains.annotations.NotNull;
+import lombok.Setter;
+
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
-import javax.swing.event.TableModelEvent;
-import javax.swing.event.TableModelListener;
 import javax.swing.table.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
@@ -24,10 +24,7 @@ import java.net.URL;
 import java.util.Collection;
 import java.util.Enumeration;
 
-import static global.Constants.CAVIAR_DREAMS;
-import static global.Constants.EMPTY_BORDER;
-import static global.Constants.BACKGROUND;
-import static global.Constants.FOREGROUND;
+import static global.Constants.*;
 
 /**
  * Create by Aviv POS
@@ -39,6 +36,8 @@ public class MainFrame {
     private JFrame frame;
     private CauseModel model;
     int gap = 1;
+    @Setter
+    private String imagePath;
 
     JTable table;
     private JPanel tblPanel;
@@ -50,7 +49,7 @@ public class MainFrame {
         table = new JTable(model) {
             public Component prepareRenderer(TableCellRenderer renderer, int row, int column) {
                 JComponent jc = (JComponent) super.prepareRenderer(renderer, row, column);
-                return prepareTableRenderer(jc,renderer, row, column);
+                return prepareTableRenderer(jc, column);
             }
 
 
@@ -78,14 +77,19 @@ public class MainFrame {
         table.setDefaultRenderer(Cause.Entry.class, new CauseRenderer());
         table.setDefaultRenderer(String.class, new RowHeaderRenderer());
 
+        //table.setCellSelectionEnabled(true);
+
         VerticalTableHeaderCellRenderer headerRenderer = new VerticalTableHeaderCellRenderer() {
 
 
             @Override
             public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
                 JLabel lbl = (JLabel) super.getTableCellRendererComponent(table, value.toString()+"  ", isSelected, hasFocus, row, column);
+                lbl.setOpaque(true);
                 lbl.setFont(CAVIAR_DREAMS);
                 lbl.setBorder(EMPTY_BORDER);
+                lbl.setBackground(table.getSelectedColumn()==column?table.getSelectionBackground():table.getBackground());
+               //System.err.println("selected "+table.getCellSelectionEnabled());
                 return lbl;
             }
         };
@@ -150,36 +154,40 @@ public class MainFrame {
         pnl.add(tblPanel);
         pnl.add(pnlRight, BorderLayout.EAST);
 
+        if(imagePath!=null&&!imagePath.trim().isEmpty()) {
+            table.addMouseListener(new MouseAdapter() {
+                @Override
+                public void mouseClicked(MouseEvent e) {
+                    Point p = e.getPoint();
+                    int row = table.rowAtPoint(p);
+                    int col = table.columnAtPoint(p);
+                    if (row >= 0 && col >= 0) {
+                        Object obj = table.getValueAt(row, col);
+                        if (obj instanceof Cause.Entry) {
+                            Cause.Entry entry = (Cause.Entry) obj;
 
-        table.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                Point p = e.getPoint();
-                int row = table.rowAtPoint(p);
-                int col = table.columnAtPoint(p);
-                if (row >= 0 && col >= 0) {
-                    Object obj = table.getValueAt(row, col);
-                    if (obj instanceof Cause.Entry) {
-                        Cause.Entry entry = (Cause.Entry) obj;
-                        try {
-                            File file = new File("C:\\Users\\Olga-PC\\IdeaProjects\\Architect\\images", model.causeAtRow(row).getRowHeader().getName() + "_" + entry.getColumnHeader().getName() + ".jpeg");
-                            if (file.isFile())
-                                imagePanel.setImage(ImageIO.read(file));
-                            else {
+                            try {
+                                File file = new File(imagePath, model.causeAtRow(row).getRowHeader().getName() + "_" + entry.getColumnHeader().getName() + ".jpeg");
+                                if (file.isFile())
+                                    imagePanel.setImage(ImageIO.read(file));
+                                else {
+                                    imagePanel.setImage(null);
+                                }
+                            } catch (IOException ioException) {
+                                ioException.printStackTrace();
                                 imagePanel.setImage(null);
                             }
-                        } catch (IOException ioException) {
-                            ioException.printStackTrace();
+
+
+                        } else
                             imagePanel.setImage(null);
-                        }
-                    } else
+                    } else {
                         imagePanel.setImage(null);
-                } else {
-                    imagePanel.setImage(null);
+                    }
+                    imagePanel.repaint();
                 }
-                imagePanel.repaint();
-            }
-        });
+            });
+        }
         frame = new JFrame();
         frame.setUndecorated(true);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -197,7 +205,7 @@ public class MainFrame {
         frame.setVisible(true);
     }
     @NotNull
-    private Component prepareTableRenderer(JComponent jc, TableCellRenderer renderer, int row, int column) {
+    private Component prepareTableRenderer(JComponent jc, int column) {
 
         if (column == 0)
             jc.setBorder(EMPTY_BORDER);
@@ -216,7 +224,7 @@ public class MainFrame {
         }
         public Component prepareRenderer(TableCellRenderer renderer, int row, int column) {
             JComponent jc = (JComponent) super.prepareRenderer(renderer, row, column);
-            return prepareTableRenderer(jc,renderer, row, column);
+            return prepareTableRenderer(jc, column);
         }
 
         private void refresh() {
@@ -226,6 +234,7 @@ public class MainFrame {
 
             cmFooter.getColumn(0).setPreferredWidth(cm.getColumn(0).getWidth());
             cmFooter.getColumn(0).setWidth(cm.getColumn(0).getWidth());
+            cmFooter.getColumn(0).setMinWidth(cm.getColumn(0).getWidth());
             int count = cmFooter.getColumnCount();
             for (int i = 1; i < count; i++) {
                 LocationType type = (LocationType) getModel().getValueAt(0, i);

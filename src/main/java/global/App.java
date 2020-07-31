@@ -29,7 +29,7 @@ import java.util.TreeSet;
 @Slf4j
 public class App {
     public static void main(String[] args) {
-
+        String imagePath=args.length>0?args[0]:null;
 
         CauseModel model = new CauseModel();
 
@@ -54,14 +54,12 @@ public class App {
                 columns.addAll(e.getVerticalLocation());
 
         });
-        /*Yaml yaml = new Yaml();
-        String dump = yaml.dump(causes);
-        System.out.println(dump);
-        System.out.println(new Gson().toJson(causes));*/
+
 
         model.setData(columns, causes);
         installFonts();
         MainFrame mainFrame = new MainFrame();
+        mainFrame.setImagePath(imagePath);
         mainFrame.show(model);
 
     }

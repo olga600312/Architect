@@ -1,10 +1,7 @@
 package domain;
 
-import com.oracle.webservices.internal.api.databinding.DatabindingMode;
 import lombok.Builder;
 import lombok.Data;
-
-import java.awt.*;
 
 /**
  * Create by Aviv POS

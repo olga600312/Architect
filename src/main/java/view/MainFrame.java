@@ -1,14 +1,11 @@
 package view;
 
-import com.sun.istack.internal.NotNull;
 import domain.Cause;
 import domain.LocationType;
-import global.App;
 import global.Constants;
 import global.Utilities;
 import lombok.Data;
 import lombok.Setter;
-
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -43,7 +40,7 @@ public class MainFrame {
     private JPanel tblPanel;
     private FooterTable footer;
 
-    public void show(CauseModel model) {
+    public void show(CauseModel model,boolean fullScreen) {
         this.model = model;
 
         table = new JTable(model) {
@@ -63,7 +60,7 @@ public class MainFrame {
         pnlRight.setBackground(BACKGROUND);
         ImagePanel imagePanel = new ImagePanel();
         pnlRight.add(imagePanel, BorderLayout.NORTH);
-        URL resource = App.class.getClassLoader().getResource("tweetsAnalysisCover.png");
+        URL resource = getClass().getClassLoader().getResource("tweetsAnalysisCover.png");
 
         try {
             LogoPanel logoPanel = new LogoPanel(ImageIO.read(resource));
@@ -77,19 +74,20 @@ public class MainFrame {
         table.setDefaultRenderer(Cause.Entry.class, new CauseRenderer());
         table.setDefaultRenderer(String.class, new RowHeaderRenderer());
 
-        //table.setCellSelectionEnabled(true);
+        table.setCellSelectionEnabled(true);
 
         VerticalTableHeaderCellRenderer headerRenderer = new VerticalTableHeaderCellRenderer() {
 
 
             @Override
             public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-                JLabel lbl = (JLabel) super.getTableCellRendererComponent(table, value.toString()+"  ", isSelected, hasFocus, row, column);
-                lbl.setOpaque(true);
+                JLabel lbl = (JLabel) super.getTableCellRendererComponent(table, value.toString() + "  ", isSelected, hasFocus, row, column);
+                //lbl.setOpaque(true);
                 lbl.setFont(CAVIAR_DREAMS);
                 lbl.setBorder(EMPTY_BORDER);
-                lbl.setBackground(table.getSelectedColumn()==column?table.getSelectionBackground():table.getBackground());
-               //System.err.println("selected "+table.getCellSelectionEnabled());
+
+               // lbl.setBackground(isSelected ? table.getSelectionBackground() : table.getBackground());
+                //System.err.println("selected "+table.getCellSelectionEnabled());
                 return lbl;
             }
         };
@@ -131,7 +129,7 @@ public class MainFrame {
         Border empty = new EmptyBorder(0, 0, 0, 0);
         sp.setBorder(empty);
 
-       footer = new FooterTable(table);
+        footer = new FooterTable(table);
         model.addTableModelListener(e -> {
             TableColumnModel cmFooter = footer.getColumnModel();
             TableColumnModel cm = table.getColumnModel();
@@ -153,34 +151,46 @@ public class MainFrame {
         JPanel pnl = new JPanel(new BorderLayout());
         pnl.add(tblPanel);
         pnl.add(pnlRight, BorderLayout.EAST);
-
-        if(imagePath!=null&&!imagePath.trim().isEmpty()) {
+        System.err.println("Image path"+imagePath);
+        if (imagePath != null && !imagePath.trim().isEmpty()) {
             table.addMouseListener(new MouseAdapter() {
+                int selectedRow=-1;
+                int selectedColumn=-1;
                 @Override
                 public void mouseClicked(MouseEvent e) {
                     Point p = e.getPoint();
                     int row = table.rowAtPoint(p);
                     int col = table.columnAtPoint(p);
-                    if (row >= 0 && col >= 0) {
-                        Object obj = table.getValueAt(row, col);
-                        if (obj instanceof Cause.Entry) {
-                            Cause.Entry entry = (Cause.Entry) obj;
 
-                            try {
-                                File file = new File(imagePath, model.causeAtRow(row).getRowHeader().getName() + "_" + entry.getColumnHeader().getName() + ".jpeg");
-                                if (file.isFile())
-                                    imagePanel.setImage(ImageIO.read(file));
-                                else {
+                    if (row >= 0 && col >= 0) {
+                        if (row==selectedRow&&col==selectedColumn) {
+                            table.clearSelection();
+                            imagePanel.setImage(null);
+                            selectedRow=-1;
+                            selectedColumn=-1;
+                        } else {
+                            selectedRow=row;
+                            selectedColumn=col;
+                            Object obj = table.getValueAt(row, col);
+                            if (obj instanceof Cause.Entry) {
+                                Cause.Entry entry = (Cause.Entry) obj;
+
+                                try {
+                                    File file = new File(imagePath, model.causeAtRow(row).getRowHeader().getName() + "_" + entry.getColumnHeader().getName() + ".jpeg");
+                                    if (file.isFile())
+                                        imagePanel.setImage(ImageIO.read(file));
+                                    else {
+                                        imagePanel.setImage(null);
+                                    }
+                                } catch (IOException ioException) {
+                                    ioException.printStackTrace();
                                     imagePanel.setImage(null);
                                 }
-                            } catch (IOException ioException) {
-                                ioException.printStackTrace();
+
+
+                            } else
                                 imagePanel.setImage(null);
-                            }
-
-
-                        } else
-                            imagePanel.setImage(null);
+                        }
                     } else {
                         imagePanel.setImage(null);
                     }
@@ -189,7 +199,7 @@ public class MainFrame {
             });
         }
         frame = new JFrame();
-        frame.setUndecorated(true);
+        frame.setUndecorated(fullScreen);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setContentPane(pnl);
 
@@ -204,7 +214,7 @@ public class MainFrame {
         frame.setSize(Toolkit.getDefaultToolkit().getScreenSize());
         frame.setVisible(true);
     }
-    @NotNull
+
     private Component prepareTableRenderer(JComponent jc, int column) {
 
         if (column == 0)
@@ -222,13 +232,14 @@ public class MainFrame {
             this.mainTable = mainTable;
             refresh();
         }
+
         public Component prepareRenderer(TableCellRenderer renderer, int row, int column) {
             JComponent jc = (JComponent) super.prepareRenderer(renderer, row, column);
             return prepareTableRenderer(jc, column);
         }
 
         private void refresh() {
-            CauseModel causeModel=(CauseModel) mainTable.getModel();
+            CauseModel causeModel = (CauseModel) mainTable.getModel();
             TableColumnModel cmFooter = getColumnModel();
             TableColumnModel cm = mainTable.getColumnModel();
 
@@ -238,8 +249,8 @@ public class MainFrame {
             int count = cmFooter.getColumnCount();
             for (int i = 1; i < count; i++) {
                 LocationType type = (LocationType) getModel().getValueAt(0, i);
-                Collection<Integer> columns=causeModel.getColumnsByType(type);
-                int w=columns.stream().mapToInt(k->cm.getColumn(k).getWidth()).sum();
+                Collection<Integer> columns = causeModel.getColumnsByType(type);
+                int w = columns.stream().mapToInt(k -> cm.getColumn(k).getWidth()).sum();
                 cmFooter.getColumn(i).setWidth(w);
                 cmFooter.getColumn(i).setPreferredWidth(w);
             }
@@ -276,7 +287,7 @@ public class MainFrame {
         @Override
         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
             LocationType e = (LocationType) value;
-            setText("  "+e.name());
+            setText("  " + e.name());
             setBackground(Utilities.setSaturation(e.getInitColor(), 0.27f));
             return this;
         }
@@ -317,7 +328,9 @@ public class MainFrame {
             super.paint(g);
             if (image != null) {
                 float scale = Math.min(((float) getWidth()) / ((float) image.getWidth(null)), ((float) getHeight()) / ((float) image.getHeight(null)));
-                g.drawImage(image, 0, table.getTableHeader().getHeight(), (int) (image.getWidth(null) * scale), (int) (image.getHeight(null) * scale), null);
+                int width = (int) (image.getWidth(null) * scale);
+                int height = (int) (image.getHeight(null) * scale);
+                g.drawImage(image, 0, table.getTableHeader().getHeight(), width, height, null);
             }
         }
     }
@@ -331,6 +344,12 @@ public class MainFrame {
             this.image = image;
             setBackground(BACKGROUND);
             //  setBorder(BorderFactory.createLineBorder(Color.red));
+            addMouseListener(new MouseAdapter() {
+                @Override
+                public void mouseClicked(MouseEvent e) {
+                    System.exit(0);
+                }
+            });
         }
 
         @Override
@@ -342,13 +361,15 @@ public class MainFrame {
         @Override
         public void paint(Graphics g) {
             super.paint(g);
+            Graphics2D g2=(Graphics2D)g;
             if (image != null) {
+
                 int offset = Math.max(2, frame.getSize().height - table.getSize().height - table.getTableHeader().getHeight());
                 float scale = Math.min(((float) getWidth()) / ((float) image.getWidth(null)), (float) getHeight() / ((float) image.getHeight(null)));
                 int width = (int) (image.getWidth(null) * scale);
                 int height = (int) (image.getHeight(null) * scale);
-
-                g.drawImage(image, (getWidth() - width) / 2, getHeight()-height-footer.getRowHeight(), width, height, null);
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                g2.drawImage(image, (getWidth() - width) / 2, getHeight() - height - footer.getRowHeight(), width, height, null);
                /* g.setColor(Color.darkGray);
                 g.drawRect((getWidth() - width) / 2, getHeight()-height,(getWidth() - width) / 2+width,height);*/
             }

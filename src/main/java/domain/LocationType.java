@@ -1,9 +1,6 @@
 package domain;
 
-import lombok.Data;
-
 import java.awt.*;
-import java.util.ArrayList;
 
 
 public enum LocationType {
@@ -35,7 +32,7 @@ public enum LocationType {
     },WORKPLACE {
         @Override
         public Color getInitColor() {
-            return new Color(0x00e9f1f2);
+            return new Color(0xE9F1F2);
         }
     };
 

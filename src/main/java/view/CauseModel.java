@@ -6,7 +6,6 @@ import domain.LocationType;
 import javax.swing.table.AbstractTableModel;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Set;
 
 /**
  * Create by Aviv POS
@@ -38,7 +37,7 @@ public class CauseModel extends AbstractTableModel {
     }
 
     public Object getValueAt(int rowIndex, int columnIndex) {
-        Object o = null;
+        Object o;
         if (columnIndex == 0) {
             o = data.get(rowIndex).getRowHeader().getName();
         } else {
@@ -57,9 +56,7 @@ public class CauseModel extends AbstractTableModel {
         fireTableStructureChanged();
     }
 
-    public ArrayList<String> getColumns() {
-        return columns;
-    }
+
 
     public Cause causeAtRow(int row) {
         return row >= 0 && row < data.size() ? data.get(row) : null;

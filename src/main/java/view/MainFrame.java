@@ -5,6 +5,7 @@ import domain.LocationType;
 import global.Constants;
 import global.Utilities;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.Setter;
 
 import javax.imageio.ImageIO;
@@ -30,18 +31,13 @@ import static global.Constants.*;
  * Time: 12:28
  */
 public class MainFrame {
-    private JFrame frame;
-    private CauseModel model;
-    int gap = 1;
     @Setter
     private String imagePath;
 
-    JTable table;
-    private JPanel tblPanel;
+    private JTable table;
     private FooterTable footer;
 
     public void show(CauseModel model,boolean fullScreen) {
-        this.model = model;
 
         table = new JTable(model) {
             public Component prepareRenderer(TableCellRenderer renderer, int row, int column) {
@@ -54,7 +50,7 @@ public class MainFrame {
         table.setShowGrid(false);
         table.setIntercellSpacing(new Dimension(0, 0));
 
-        int resolution = Toolkit.getDefaultToolkit().getScreenResolution();
+       // int resolution = Toolkit.getDefaultToolkit().getScreenResolution();
         Dimension d = Toolkit.getDefaultToolkit().getScreenSize();
         JPanel pnlRight = new JPanel(new BorderLayout());
         pnlRight.setBackground(BACKGROUND);
@@ -63,9 +59,13 @@ public class MainFrame {
         URL resource = getClass().getClassLoader().getResource("tweetsAnalysisCover.png");
 
         try {
-            LogoPanel logoPanel = new LogoPanel(ImageIO.read(resource));
-            pnlRight.add(logoPanel, BorderLayout.SOUTH);
-        } catch (IOException e) {
+
+            if (resource != null) {
+                LogoPanel logoPanel  = new LogoPanel(ImageIO.read(resource));
+                pnlRight.add(logoPanel, BorderLayout.SOUTH);
+            }
+
+        } catch (Exception e) {
             e.printStackTrace();
         }
         int rowHeight = (d.width - imagePanel.getWidth()) / 65;
@@ -112,14 +112,14 @@ public class MainFrame {
 
 
         JTableHeader tableHeader = table.getTableHeader();
-        tableHeader.setReorderingAllowed(false);//Was also able to do this within NetBeans GUI Builder by doing Table Contents from Jtable inspector item
+        tableHeader.setReorderingAllowed(false);//Was also able to do this within NetBeans GUI Builder by doing Table Contents from JTable inspector item
         //table.getTableHeader().setResizingAllowed(false);
         tableHeader.setBackground(BACKGROUND);
         tableHeader.setForeground(Constants.FOREGROUND);
 
 
-        //load main table to scrollpane
-        JScrollPane sp = new JScrollPane(table);
+        //load main table to scrollPane
+        JScrollPane sp =createScrollPane(table);// new JScrollPane(table);
         // sp.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
 
         sp.getViewport().setBackground(BACKGROUND);
@@ -143,8 +143,9 @@ public class MainFrame {
         footer.setRowHeight(table.getRowHeight());
         footer.setShowGrid(false);
         footer.setIntercellSpacing(new Dimension(0, 0));
+        //footer.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
 
-        tblPanel = new JPanel(new BorderLayout());
+        JPanel tblPanel = new JPanel(new BorderLayout());
         tblPanel.add(BorderLayout.CENTER, sp);
         tblPanel.add(BorderLayout.SOUTH, footer);
 
@@ -198,7 +199,7 @@ public class MainFrame {
                 }
             });
         }
-        frame = new JFrame();
+        JFrame frame = new JFrame();
         frame.setUndecorated(fullScreen);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setContentPane(pnl);
@@ -210,13 +211,52 @@ public class MainFrame {
         splitPane.setResizeWeight(1);
         frame.setContentPane(splitPane);*/
         frame.pack();
-        //frame.setSize(new Dimension(table.getColumnCount()*rowHeight*gap,table.getPreferredScrollableViewportSize().height));
         frame.setSize(Toolkit.getDefaultToolkit().getScreenSize());
         frame.setVisible(true);
     }
 
+    private JScrollPane createScrollPane(JTable tbl){
+        JScrollPane scrollPane = new JScrollPane(tbl);
+        scrollPane.setComponentZOrder(scrollPane.getVerticalScrollBar(), 0);
+        scrollPane.setComponentZOrder(scrollPane.getViewport(), 1);
+        scrollPane.getVerticalScrollBar().setOpaque(false);
+
+        scrollPane.setLayout(new ScrollPaneLayout() {
+            @Override
+            public void layoutContainer(Container parent) {
+                JScrollPane scrollPane = (JScrollPane) parent;
+
+                Rectangle availR = scrollPane.getBounds();
+                availR.x = availR.y = 0;
+
+                Insets parentInsets = parent.getInsets();
+                availR.x = parentInsets.left;
+                availR.y = parentInsets.top;
+                availR.width -= parentInsets.left + parentInsets.right;
+                availR.height -= parentInsets.top + parentInsets.bottom;
+
+                Rectangle vsbR = new Rectangle();
+                vsbR.width = 8;
+                vsbR.height = availR.height;
+                vsbR.x = availR.x + availR.width - vsbR.width;
+                vsbR.y = availR.y;
+
+                if (viewport != null) {
+                    viewport.setBounds(availR);
+                }
+                if (vsb != null) {
+                    vsb.setVisible(true);
+                    vsb.setBounds(vsbR);
+                }
+            }
+        });
+        scrollPane.getVerticalScrollBar().setUI(new MyScrollBarUI());
+        return scrollPane;
+    }
+
     private Component prepareTableRenderer(JComponent jc, int column) {
 
+        int gap = 1;
         if (column == 0)
             jc.setBorder(EMPTY_BORDER);
         else
@@ -225,7 +265,7 @@ public class MainFrame {
     }
 
     private class FooterTable extends JTable {
-        private JTable mainTable;
+        private final JTable mainTable;
 
         public FooterTable(JTable mainTable) {
             super(new CauseFooterModel((CauseModel) mainTable.getModel()));
@@ -269,8 +309,13 @@ public class MainFrame {
         @Override
         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
             Cause.Entry e = (Cause.Entry) value;
-            setText("" + (isSelected && hasFocus ? e.getTotal() : ""));
+            setText("" + (isSelected && hasFocus &&e.getTotal()>0? e.getTotal() : ""));
             setBackground(e.getColor());
+            float saturation=Utilities.getSaturation(e.getColor());
+            if(saturation<=0.5){
+                setForeground(FOREGROUND);
+            }else
+                setForeground(BACKGROUND);
             return this;
         }
     }
@@ -308,6 +353,7 @@ public class MainFrame {
         }
     }
 
+    @EqualsAndHashCode(callSuper = true)
     @Data
     private class ImagePanel extends JPanel {
 
@@ -335,6 +381,7 @@ public class MainFrame {
         }
     }
 
+    @EqualsAndHashCode(callSuper = true)
     @Data
     private class LogoPanel extends JPanel {
 
@@ -364,7 +411,7 @@ public class MainFrame {
             Graphics2D g2=(Graphics2D)g;
             if (image != null) {
 
-                int offset = Math.max(2, frame.getSize().height - table.getSize().height - table.getTableHeader().getHeight());
+               // int offset = Math.max(2, frame.getSize().height - table.getSize().height - table.getTableHeader().getHeight());
                 float scale = Math.min(((float) getWidth()) / ((float) image.getWidth(null)), (float) getHeight() / ((float) image.getHeight(null)));
                 int width = (int) (image.getWidth(null) * scale);
                 int height = (int) (image.getHeight(null) * scale);

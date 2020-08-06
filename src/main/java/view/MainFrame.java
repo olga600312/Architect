@@ -179,15 +179,11 @@ public class MainFrame {
                                 Cause.Entry entry = (Cause.Entry) obj;
 
                                 try {
-                                    File file = new File(imagePath, entry.getColumnHeader().getName() + "_" + model.causeAtRow(row).getRowHeader().getName() + ".png");
+                                    File file = new File(imagePath + File.separatorChar + entry.getColumnHeader().getName(), entry.getColumnHeader().getName() + "_" + model.causeAtRow(row).getRowHeader().getName() + ".png");
                                     if (file.isFile())
                                         imagePanel.setImage(ImageIO.read(file));
                                     else {
-                                        file = new File(imagePath, entry.getColumnHeader().getName() + "_" + model.causeAtRow(row).getRowHeader().getName() + ".jpeg");
-                                        if (file.isFile())
-                                            imagePanel.setImage(ImageIO.read(file));
-                                        else
-                                            imagePanel.setImage(null);
+                                        imagePanel.setImage(null);
                                     }
                                 } catch (IOException ioException) {
                                     ioException.printStackTrace();
@@ -319,7 +315,7 @@ public class MainFrame {
         @Override
         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
             Cause.Entry e = (Cause.Entry) value;
-            setText("" + (isSelected && hasFocus && e.getTotal() > 0 ? e.getTotal() : ""));
+            setText("" + (isSelected &&/* hasFocus &&*/ e.getTotal() > 0 ? e.getTotal() : ""));
             setBackground(e.getColor());
             float saturation = Utilities.getSaturation(e.getColor());
             if (saturation <= 0.5) {

@@ -37,7 +37,7 @@ public class MainFrame {
     private JTable table;
     private FooterTable footer;
 
-    public void show(CauseModel model,boolean fullScreen) {
+    public void show(CauseModel model, boolean fullScreen) {
 
         table = new JTable(model) {
             public Component prepareRenderer(TableCellRenderer renderer, int row, int column) {
@@ -47,10 +47,9 @@ public class MainFrame {
 
 
         };
-        table.setShowGrid(false);
-        table.setIntercellSpacing(new Dimension(0, 0));
 
-       // int resolution = Toolkit.getDefaultToolkit().getScreenResolution();
+
+        // int resolution = Toolkit.getDefaultToolkit().getScreenResolution();
         Dimension d = Toolkit.getDefaultToolkit().getScreenSize();
         JPanel pnlRight = new JPanel(new BorderLayout());
         pnlRight.setBackground(BACKGROUND);
@@ -61,7 +60,7 @@ public class MainFrame {
         try {
 
             if (resource != null) {
-                LogoPanel logoPanel  = new LogoPanel(ImageIO.read(resource));
+                LogoPanel logoPanel = new LogoPanel(ImageIO.read(resource));
                 pnlRight.add(logoPanel, BorderLayout.SOUTH);
             }
 
@@ -86,7 +85,7 @@ public class MainFrame {
                 lbl.setFont(CAVIAR_DREAMS);
                 lbl.setBorder(EMPTY_BORDER);
 
-               // lbl.setBackground(isSelected ? table.getSelectionBackground() : table.getBackground());
+                // lbl.setBackground(isSelected ? table.getSelectionBackground() : table.getBackground());
                 //System.err.println("selected "+table.getCellSelectionEnabled());
                 return lbl;
             }
@@ -107,6 +106,8 @@ public class MainFrame {
             i++;
             // tableColumn.setMaxWidth(rowHeight);
         }
+        table.setShowGrid(false);
+        table.setIntercellSpacing(new Dimension(0, 0));
         table.setGridColor(new Color(0xffffff));
         table.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
 
@@ -119,7 +120,7 @@ public class MainFrame {
 
 
         //load main table to scrollPane
-        JScrollPane sp =createScrollPane(table);// new JScrollPane(table);
+        JScrollPane sp = createScrollPane(table);// new JScrollPane(table);
         // sp.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
 
         sp.getViewport().setBackground(BACKGROUND);
@@ -130,13 +131,13 @@ public class MainFrame {
         sp.setBorder(empty);
 
         footer = new FooterTable(table);
-        model.addTableModelListener(e -> {
+        /*model.addTableModelListener(e -> {
             TableColumnModel cmFooter = footer.getColumnModel();
             TableColumnModel cm = table.getColumnModel();
 
             cmFooter.getColumn(0).setWidth(cm.getColumn(0).getWidth());
         });
-        model.fireTableDataChanged();
+        model.fireTableDataChanged();*/
         FooterRenderer footerRenderer = new FooterRenderer();
         footer.setForeground(BACKGROUND);
         footer.setDefaultRenderer(LocationType.class, footerRenderer);
@@ -152,11 +153,12 @@ public class MainFrame {
         JPanel pnl = new JPanel(new BorderLayout());
         pnl.add(tblPanel);
         pnl.add(pnlRight, BorderLayout.EAST);
-        System.err.println("Image path"+imagePath);
+        System.err.println("Image path" + imagePath);
         if (imagePath != null && !imagePath.trim().isEmpty()) {
             table.addMouseListener(new MouseAdapter() {
-                int selectedRow=-1;
-                int selectedColumn=-1;
+                int selectedRow = -1;
+                int selectedColumn = -1;
+
                 @Override
                 public void mouseClicked(MouseEvent e) {
                     Point p = e.getPoint();
@@ -164,24 +166,28 @@ public class MainFrame {
                     int col = table.columnAtPoint(p);
 
                     if (row >= 0 && col >= 0) {
-                        if (row==selectedRow&&col==selectedColumn) {
+                        if (row == selectedRow && col == selectedColumn) {
                             table.clearSelection();
                             imagePanel.setImage(null);
-                            selectedRow=-1;
-                            selectedColumn=-1;
+                            selectedRow = -1;
+                            selectedColumn = -1;
                         } else {
-                            selectedRow=row;
-                            selectedColumn=col;
+                            selectedRow = row;
+                            selectedColumn = col;
                             Object obj = table.getValueAt(row, col);
                             if (obj instanceof Cause.Entry) {
                                 Cause.Entry entry = (Cause.Entry) obj;
 
                                 try {
-                                    File file = new File(imagePath, model.causeAtRow(row).getRowHeader().getName() + "_" + entry.getColumnHeader().getName() + ".jpeg");
+                                    File file = new File(imagePath, entry.getColumnHeader().getName() + "_" + model.causeAtRow(row).getRowHeader().getName() + ".png");
                                     if (file.isFile())
                                         imagePanel.setImage(ImageIO.read(file));
                                     else {
-                                        imagePanel.setImage(null);
+                                        file = new File(imagePath, entry.getColumnHeader().getName() + "_" + model.causeAtRow(row).getRowHeader().getName() + ".jpeg");
+                                        if (file.isFile())
+                                            imagePanel.setImage(ImageIO.read(file));
+                                        else
+                                            imagePanel.setImage(null);
                                     }
                                 } catch (IOException ioException) {
                                     ioException.printStackTrace();
@@ -199,29 +205,31 @@ public class MainFrame {
                 }
             });
         }
+
         JFrame frame = new JFrame();
         frame.setUndecorated(fullScreen);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setContentPane(pnl);
 
-       /* JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
-        splitPane.setLeftComponent(sp);
-        splitPane.setRightComponent(imagePanel);
-        splitPane.setDividerLocation(0.8);
-        splitPane.setResizeWeight(1);
-        frame.setContentPane(splitPane);*/
+
         frame.pack();
-        frame.setSize(Toolkit.getDefaultToolkit().getScreenSize());
+        frame.setSize(Toolkit.getDefaultToolkit().
+
+                getScreenSize());
         frame.setVisible(true);
     }
 
-    private JScrollPane createScrollPane(JTable tbl){
+    private JScrollPane createScrollPane(JTable tbl) {
         JScrollPane scrollPane = new JScrollPane(tbl);
         scrollPane.setComponentZOrder(scrollPane.getVerticalScrollBar(), 0);
         scrollPane.setComponentZOrder(scrollPane.getViewport(), 1);
         scrollPane.getVerticalScrollBar().setOpaque(false);
 
-        scrollPane.setLayout(new ScrollPaneLayout() {
+        int width = 8;
+        scrollPane.getVerticalScrollBar().setPreferredSize(new Dimension(width, 0));
+        scrollPane.getHorizontalScrollBar().setPreferredSize(new Dimension(0, width));
+// remarked due bug in the header absent
+        /*scrollPane.setLayout(new ScrollPaneLayout() {
             @Override
             public void layoutContainer(Container parent) {
                 JScrollPane scrollPane = (JScrollPane) parent;
@@ -249,7 +257,7 @@ public class MainFrame {
                     vsb.setBounds(vsbR);
                 }
             }
-        });
+        });*/
         scrollPane.getVerticalScrollBar().setUI(new MyScrollBarUI());
         return scrollPane;
     }
@@ -271,6 +279,7 @@ public class MainFrame {
             super(new CauseFooterModel((CauseModel) mainTable.getModel()));
             this.mainTable = mainTable;
             refresh();
+
         }
 
         public Component prepareRenderer(TableCellRenderer renderer, int row, int column) {
@@ -283,9 +292,10 @@ public class MainFrame {
             TableColumnModel cmFooter = getColumnModel();
             TableColumnModel cm = mainTable.getColumnModel();
 
-            cmFooter.getColumn(0).setPreferredWidth(cm.getColumn(0).getWidth());
-            cmFooter.getColumn(0).setWidth(cm.getColumn(0).getWidth());
-            cmFooter.getColumn(0).setMinWidth(cm.getColumn(0).getWidth());
+            int width = cm.getColumn(0).getWidth();
+            cmFooter.getColumn(0).setPreferredWidth(width);
+            cmFooter.getColumn(0).setWidth(width);
+            //cmFooter.getColumn(0).setMinWidth(width);
             int count = cmFooter.getColumnCount();
             for (int i = 1; i < count; i++) {
                 LocationType type = (LocationType) getModel().getValueAt(0, i);
@@ -309,12 +319,12 @@ public class MainFrame {
         @Override
         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
             Cause.Entry e = (Cause.Entry) value;
-            setText("" + (isSelected && hasFocus &&e.getTotal()>0? e.getTotal() : ""));
+            setText("" + (isSelected && hasFocus && e.getTotal() > 0 ? e.getTotal() : ""));
             setBackground(e.getColor());
-            float saturation=Utilities.getSaturation(e.getColor());
-            if(saturation<=0.5){
+            float saturation = Utilities.getSaturation(e.getColor());
+            if (saturation <= 0.5) {
                 setForeground(FOREGROUND);
-            }else
+            } else
                 setForeground(BACKGROUND);
             return this;
         }
@@ -408,10 +418,10 @@ public class MainFrame {
         @Override
         public void paint(Graphics g) {
             super.paint(g);
-            Graphics2D g2=(Graphics2D)g;
+            Graphics2D g2 = (Graphics2D) g;
             if (image != null) {
 
-               // int offset = Math.max(2, frame.getSize().height - table.getSize().height - table.getTableHeader().getHeight());
+                // int offset = Math.max(2, frame.getSize().height - table.getSize().height - table.getTableHeader().getHeight());
                 float scale = Math.min(((float) getWidth()) / ((float) image.getWidth(null)), (float) getHeight() / ((float) image.getHeight(null)));
                 int width = (int) (image.getWidth(null) * scale);
                 int height = (int) (image.getHeight(null) * scale);
